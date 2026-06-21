@@ -81,3 +81,22 @@ Zusätzlich in `release/`:
 - `RELEASE_NOTES_vX.Y.Z.md` (versioniert, automatisch je Build erzeugt)
 
 Die EXE enthält Logo, Icon, JSON-Konfiguration und vorhandene Screenshots eingebettet.
+
+## GitHub Releases (automatisch)
+
+Es gibt einen GitHub-Workflow unter `.github/workflows/release.yml`, der bei jedem Tag im Format `vX.Y.Z` automatisch:
+
+1. die EXE baut,
+2. die Release-Notes aus `release/RELEASE_NOTES_vX.Y.Z.md` verwendet,
+3. einen GitHub Release mit den Artefakten veröffentlicht.
+
+Trigger:
+
+- `push` auf Tag `v*.*.*` (empfohlen)
+- manuell über `workflow_dispatch` mit Eingabe `version`
+
+Typischer Ablauf für eine neue Version:
+
+1. Lokal Version erhöhen (z. B. mit `-BumpPatch`), testen und committen.
+2. Tag erstellen (`vX.Y.Z`) und pushen.
+3. GitHub Actions erstellt den Release automatisch.

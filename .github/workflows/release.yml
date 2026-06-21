@@ -1,0 +1,74 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version im Format vX.Y.Z (z. B. v1.1.1)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Versionswert bestimmen
+        id: version
+        shell: pwsh
+        run: |
+          $version = '${{ github.ref_name }}'
+          if ('${{ github.event_name }}' -eq 'workflow_dispatch') {
+            $version = '${{ inputs.version }}'
+          }
+
+          if ($version -notmatch '^v\d+\.\d+\.\d+$') {
+            throw "Ungültige Version '$version'. Erwartet wird vX.Y.Z."
+          }
+
+          "value=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: PSGallery vorbereiten
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+
+      - name: Build ausführen
+        shell: pwsh
+        run: |
+          .\src\Build-Edge-Profil-Assistent.ps1 -Version '${{ steps.version.outputs.value }}'
+
+      - name: Artefakte prüfen
+        shell: pwsh
+        run: |
+          $version = '${{ steps.version.outputs.value }}'
+          $required = @(
+            ".\release\Edge_Profil_Assistent_$version.exe",
+            ".\release\RELEASE_NOTES_$version.md"
+          )
+
+          foreach ($file in $required) {
+            if (-not (Test-Path $file)) {
+              throw "Artefakt fehlt: $file"
+            }
+          }
+
+      - name: GitHub Release veröffentlichen
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.value }}
+          name: Edge Profil-Assistent ${{ steps.version.outputs.value }}
+          body_path: ./release/RELEASE_NOTES_${{ steps.version.outputs.value }}.md
+          files: |
+            ./release/Edge_Profil_Assistent_${{ steps.version.outputs.value }}.exe
+            ./release/RELEASE_NOTES_${{ steps.version.outputs.value }}.md
+          fail_on_unmatched_files: true
