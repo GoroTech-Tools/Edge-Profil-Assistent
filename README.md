@@ -2,6 +2,19 @@
 
 Diese README beschreibt die aktuelle Single-EXE-Variante des Edge Profil-Assistenten mit optionalen Screenshots je Schritt.
 
+## Schnellstart
+
+- [Anwenderdokumentation öffnen](docs/DOKUMENTATION_ANWENDER.md)
+- [Technische Dokumentation öffnen](docs/DOKUMENTATION_TECHNIK.md)
+- [Zum Build-Abschnitt springen](#build)
+- [Zu automatischen GitHub-Releases springen](#github-releases-automatisch)
+- [Aktuelle Releases auf GitHub ansehen](https://github.com/TomGorontzy/Edge-Profil-Assistent/releases)
+
+## Dokumentation
+
+- [Anwenderdokumentation](docs/DOKUMENTATION_ANWENDER.md)
+- [Technische Dokumentation](docs/DOKUMENTATION_TECHNIK.md)
+
 ## Projektdateien
 
 Pflicht im Quellordner `src/`:
