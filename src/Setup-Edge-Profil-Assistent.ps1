@@ -9,6 +9,9 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+$script:FixedFavoriteUrl = 'https://gorotech489.sharepoint.com'
+$script:FixedFavoriteName = 'Intranet-Portal'
+
 try {
     [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
     $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -81,7 +84,7 @@ __SCREENSHOT_FAVORIT_BASE64__
   "AppTitle": "Edge Profil-Assistent",
   "CompanyName": "GoroTech",
   "FavoriteUrl": "https://gorotech489.sharepoint.com",
-  "FavoriteName": "Intranet-Portal der Kaufleute",
+        "FavoriteName": "Intranet-Portal",
   "ProfileNameTip": "GoroTech",
   "ThemeColor": "#0078D4",
   "LogoPath": "gorotech.png"
@@ -99,8 +102,8 @@ $DocTechnikPath = Join-Path $ScriptRoot 'docs\DOKUMENTATION_TECHNIK.md'
 $config = [ordered]@{
     AppTitle       = 'Edge Profil-Assistent'
     CompanyName    = 'GoroTech'
-    FavoriteUrl    = 'https://gorotech489.sharepoint.com'
-    FavoriteName   = 'Intranet-Portal der Kaufleute'
+    FavoriteUrl    = $script:FixedFavoriteUrl
+    FavoriteName   = $script:FixedFavoriteName
     ProfileNameTip = 'GoroTech'
     ThemeColor     = '#0078D4'
     LogoPath       = 'gorotech.png'
@@ -136,6 +139,10 @@ if (Test-Path $ConfigPath) {
         }
     } catch { Show-Warning ('Die Konfigurationsdatei konnte nicht gelesen werden:' + [Environment]::NewLine + $_.Exception.Message) }
 }
+
+# Für den Assistenten immer fest vorgeben
+$config.FavoriteUrl = $script:FixedFavoriteUrl
+$config.FavoriteName = $script:FixedFavoriteName
 
 function Resolve-LocalPath {
     param([string]$PathValue)
@@ -251,6 +258,8 @@ function Set-StepImage {
 }
 
 $script:StepIndex = 0
+$script:UserLoginName = ''
+$script:UserPassword = ''
 $script:Steps = @(
     [pscustomobject]@{ Title='Willkommen'; Image=$null; Button='Weiter'; Action={}; Body=@'
 Dieser Assistent begleitet Sie Schritt für Schritt beim Einrichten eines neuen Microsoft-Edge-Profils und eines Favoriten.
@@ -267,9 +276,15 @@ Falls Edge bereits geöffnet ist, können Sie direkt mit dem nächsten Schritt f
 
 "[2]" Wählen Sie "Einrichten eines neuen Profils" und klicken Sie auf "Arbeit oder Schule".
 
-"[3]" Wählen Sie nach "Konto auswählen" den Eintrag "Neues Konto hinzufügen" aus.
+"[3a]" Wählen Sie nach "Konto auswählen" den Eintrag "Neues Konto hinzufügen" aus.
 
-"[4]" Melden Sie sich mit Ihrer E-Mail-Adresse in der Form "vorname.nachname@k-team.gorotech.de" und Ihrem Kennwort für die Synchronisation an.
+oder
+
+"[3b]" Wird Ihnen "Konto auswählen" nicht angegezeigt, wählen Sie erneut oben rechts das Profil-Symbol und wählen den Befehl "Für Synchronisierung anmelden".
+
+"[4]" Tragen Sie links im Assistenten Ihren "Anmeldenamen" und Ihr "Kennwort" ein.
+
+"[5]" Melden Sie sich mit diesen Daten in Edge für die Synchronisation an.
 '@ },
     [pscustomobject]@{ Title='Profil benennen'; Image=$null; Button='Weiter'; Action={}; Body = @'
 "[1]" Vervollständigen Sie die Anpassung des Edge-Designs für Ihr neues Profil.
@@ -347,21 +362,63 @@ $xaml = @'
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
                     <TextBlock x:Name="StepBody" FontSize="15" Foreground="#333333" TextWrapping="Wrap" LineHeight="24"/>
                 </ScrollViewer>
-                <Border Grid.Row="1" x:Name="StepImageBorder" BorderBrush="#E1E1E1" BorderThickness="1" CornerRadius="6" Margin="0,14,0,0" Padding="6" Background="#FAFAFA">
-                    <Image x:Name="StepImage" Height="185" Stretch="Uniform" Visibility="Collapsed"/>
+
+                <Border Grid.Row="1" x:Name="CredentialsPanel" BorderBrush="#E1E1E1" BorderThickness="1" CornerRadius="6" Margin="0,10,0,0" Padding="8" Background="#FAFAFA" Visibility="Collapsed">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="Benötigte Variablen" FontWeight="SemiBold" Foreground="#1F1F1F" Margin="0,0,0,6"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Anmeldename:" VerticalAlignment="Center" Margin="0,0,8,4"/>
+                        <TextBox x:Name="UsernameTextBox" Grid.Row="1" Grid.Column="1" Height="24" Margin="0,0,8,4" ToolTip="z. B. vorname.nachname@k-team.gorotech.de"/>
+                        <Button x:Name="CopyUserButton" Grid.Row="1" Grid.Column="2" Content="Kopieren" Height="24" MinWidth="82" Margin="0,0,0,4"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Kennwort:" VerticalAlignment="Center" Margin="0,0,8,4"/>
+                        <PasswordBox x:Name="PasswordInputBox" Grid.Row="2" Grid.Column="1" Height="24" Margin="0,0,8,4"/>
+                        <Button x:Name="CopyPasswordButton" Grid.Row="2" Grid.Column="2" Content="Kopieren" Height="24" MinWidth="82" Margin="0,0,0,4"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="URL / Favorit (fix):" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="0,0,8,0">
+                            <TextBox x:Name="FavoriteUrlTextBox" Height="24" Width="270" IsReadOnly="True" Margin="0,0,6,0"/>
+                            <TextBox x:Name="FavoriteTitleTextBox" Height="24" Width="170" IsReadOnly="True"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="3" Grid.Column="2" Orientation="Horizontal">
+                            <Button x:Name="CopyUrlButton" Content="URL" Height="24" MinWidth="54" Margin="0,0,4,0"/>
+                            <Button x:Name="CopyFavoriteButton" Content="Titel" Height="24" MinWidth="54"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="2" x:Name="StepImageBorder" BorderBrush="#E1E1E1" BorderThickness="1" CornerRadius="6" Margin="0,10,0,0" Padding="6" Background="#FAFAFA">
+                    <Image x:Name="StepImage" Height="170" Stretch="Uniform" Visibility="Collapsed"/>
                 </Border>
             </Grid>
             <Grid Grid.Row="2" Margin="0,2,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="StatusText" Grid.Column="0" Text="" FontSize="12" Foreground="#707070" VerticalAlignment="Center"/>
-                <StackPanel x:Name="StepDotsPanel" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="StatusText" Text="" FontSize="12" Foreground="#707070" VerticalAlignment="Center"/>
+                    <Button x:Name="ToggleVariablesButton" Content="▼ Variablen ausblenden" Height="24" Margin="14,0,0,0" Padding="10,0,10,0" Visibility="Collapsed"/>
+                </StackPanel>
+                <StackPanel x:Name="StepDotsPanel" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"/>
             </Grid>
         </Grid>
         <Border Grid.Row="3" Background="#F7F7F7" BorderBrush="#E1E1E1" BorderThickness="0,1,0,0">
@@ -404,6 +461,16 @@ $StepTitle      = $window.FindName('StepTitle')
 $StepBody       = $window.FindName('StepBody')
 $StepImage      = $window.FindName('StepImage')
 $StepImageBorder = $window.FindName('StepImageBorder')
+$CredentialsPanel = $window.FindName('CredentialsPanel')
+$UsernameTextBox = $window.FindName('UsernameTextBox')
+$PasswordInputBox = $window.FindName('PasswordInputBox')
+$FavoriteUrlTextBox = $window.FindName('FavoriteUrlTextBox')
+$FavoriteTitleTextBox = $window.FindName('FavoriteTitleTextBox')
+$CopyUserButton = $window.FindName('CopyUserButton')
+$CopyPasswordButton = $window.FindName('CopyPasswordButton')
+$CopyUrlButton = $window.FindName('CopyUrlButton')
+$CopyFavoriteButton = $window.FindName('CopyFavoriteButton')
+$ToggleVariablesButton = $window.FindName('ToggleVariablesButton')
 $StatusText     = $window.FindName('StatusText')
 $StepDotsPanel  = $window.FindName('StepDotsPanel')
 $HelpMenuDocsAnwender = $window.FindName('HelpMenuDocsAnwender')
@@ -420,6 +487,7 @@ $script:StepDotInactiveBrush = New-Object System.Windows.Media.SolidColorBrush (
 $script:StepDotActiveForeground = [System.Windows.Media.Brushes]::White
 $script:StepDotCompletedForeground = [System.Windows.Media.Brushes]::White
 $script:StepDotInactiveForeground = New-Object System.Windows.Media.SolidColorBrush ([System.Windows.Media.Color]::FromRgb(95, 95, 95))
+$script:VariablesPanelCollapsed = $false
 
 try {
     $brush = (New-Object System.Windows.Media.BrushConverter).ConvertFromString($config.ThemeColor)
@@ -482,10 +550,48 @@ function Update-StepDots {
     }
 }
 
+function Set-ClipboardText {
+    param([AllowNull()][string]$Text)
+    if ([string]::IsNullOrWhiteSpace($Text)) { return }
+    try { [System.Windows.Clipboard]::SetText($Text) } catch { }
+}
+
+function Update-VariablesPanel {
+    if ($null -ne $FavoriteUrlTextBox) { $FavoriteUrlTextBox.Text = [string]$config.FavoriteUrl }
+    if ($null -ne $FavoriteTitleTextBox) { $FavoriteTitleTextBox.Text = [string]$config.FavoriteName }
+    if ($null -ne $UsernameTextBox -and [string]::IsNullOrWhiteSpace($UsernameTextBox.Text) -and -not [string]::IsNullOrWhiteSpace($script:UserLoginName)) {
+        $UsernameTextBox.Text = $script:UserLoginName
+    }
+    if ($null -ne $PasswordInputBox -and [string]::IsNullOrWhiteSpace($PasswordInputBox.Password) -and -not [string]::IsNullOrWhiteSpace($script:UserPassword)) {
+        $PasswordInputBox.Password = $script:UserPassword
+    }
+}
+
 function Update-Ui {
     $step = $script:Steps[$script:StepIndex]
     $StepTitle.Text = $step.Title
     Set-FormattedText -TextBlock $StepBody -Text $step.Body
+    Update-VariablesPanel
+
+    # Eingaben nur in den relevanten Schritten anzeigen:
+    # 2=Profil einrichten, 4=Favoriten-Webseite öffnen, 5=Favorit speichern
+    $showVariablesBase = ($script:StepIndex -in @(2,4,5))
+    $showVariables = ($showVariablesBase -and (-not $script:VariablesPanelCollapsed))
+
+    if ($null -ne $ToggleVariablesButton) {
+        if ($showVariablesBase) {
+            $ToggleVariablesButton.Visibility = 'Visible'
+            $ToggleVariablesButton.Content = if ($script:VariablesPanelCollapsed) { '▲ Variablen einblenden' } else { '▼ Variablen ausblenden' }
+        } else {
+            $ToggleVariablesButton.Visibility = 'Collapsed'
+            $script:VariablesPanelCollapsed = $false
+        }
+    }
+
+    if ($null -ne $CredentialsPanel) {
+        $CredentialsPanel.Visibility = if ($showVariables) { 'Visible' } else { 'Collapsed' }
+    }
+
     Set-StepImage -ImageName $step.Image
     if ($StepImage.Visibility -eq 'Visible') { $StepImageBorder.Visibility = 'Visible' } else { $StepImageBorder.Visibility = 'Collapsed' }
     $StatusText.Text = 'Schritt ' + ($script:StepIndex + 1) + ' von ' + $script:Steps.Count
@@ -495,6 +601,16 @@ function Update-Ui {
 }
 
 $NextButton.Add_Click({
+    if ($null -ne $UsernameTextBox) { $script:UserLoginName = [string]$UsernameTextBox.Text }
+    if ($null -ne $PasswordInputBox) { $script:UserPassword = [string]$PasswordInputBox.Password }
+
+    if ($script:StepIndex -eq 2) {
+        if ([string]::IsNullOrWhiteSpace($script:UserLoginName) -or [string]::IsNullOrWhiteSpace($script:UserPassword)) {
+            [System.Windows.MessageBox]::Show('Bitte geben Sie Anmeldename und Kennwort ein, bevor Sie fortfahren.', $config.AppTitle, 'OK', 'Warning') | Out-Null
+            return
+        }
+    }
+
     try { & $script:Steps[$script:StepIndex].Action }
     catch { [System.Windows.MessageBox]::Show(('Die Aktion konnte nicht ausgeführt werden:' + [Environment]::NewLine + $_.Exception.Message), $config.AppTitle, 'OK', 'Warning') | Out-Null }
     if ($script:StepIndex -ge ($script:Steps.Count - 1)) { $window.Close() }
@@ -504,6 +620,39 @@ $BackButton.Add_Click({ if ($script:StepIndex -gt 0) { $script:StepIndex--; Upda
 $CancelButton.Add_Click({ $window.Close() })
 $HelpMenuDocsAnwender.Add_Click({ Open-DocumentationFile -Path $DocAnwenderPath })
 $HelpMenuDocsTechnik.Add_Click({ Open-DocumentationFile -Path $DocTechnikPath })
+
+if ($null -ne $CopyUserButton) {
+    $CopyUserButton.Add_Click({
+        if ($null -ne $UsernameTextBox) {
+            $script:UserLoginName = [string]$UsernameTextBox.Text
+            Set-ClipboardText -Text $script:UserLoginName
+        }
+    })
+}
+
+if ($null -ne $CopyPasswordButton) {
+    $CopyPasswordButton.Add_Click({
+        if ($null -ne $PasswordInputBox) {
+            $script:UserPassword = [string]$PasswordInputBox.Password
+            Set-ClipboardText -Text $script:UserPassword
+        }
+    })
+}
+
+if ($null -ne $CopyUrlButton) {
+    $CopyUrlButton.Add_Click({ Set-ClipboardText -Text ([string]$config.FavoriteUrl) })
+}
+
+if ($null -ne $CopyFavoriteButton) {
+    $CopyFavoriteButton.Add_Click({ Set-ClipboardText -Text ([string]$config.FavoriteName) })
+}
+
+if ($null -ne $ToggleVariablesButton) {
+    $ToggleVariablesButton.Add_Click({
+        $script:VariablesPanelCollapsed = -not $script:VariablesPanelCollapsed
+        Update-Ui
+    })
+}
 
 Update-Ui
 [void]$window.ShowDialog()
