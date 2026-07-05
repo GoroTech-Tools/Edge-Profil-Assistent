@@ -8,7 +8,7 @@ Diese README beschreibt die aktuelle Single-EXE-Variante des Edge Profil-Assiste
 - [Technische Dokumentation öffnen](docs/DOKUMENTATION_TECHNIK.md)
 - [Zum Build-Abschnitt springen](#build)
 - [Zu automatischen GitHub-Releases springen](#github-releases-automatisch)
-- [Aktuelle Releases auf GitHub ansehen](https://github.com/TomGorontzy/Edge-Profil-Assistent/releases)
+- [Aktuelle Releases auf GitHub ansehen](https://github.com/GoroTech-Tools/Edge-Profil-Assistent/releases)
 
 ## Dokumentation
 
