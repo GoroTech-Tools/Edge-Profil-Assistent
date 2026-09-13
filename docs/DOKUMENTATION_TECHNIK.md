@@ -20,7 +20,9 @@ flowchart TD
   A[src/Setup-Edge-Profil-Assistent.ps1] --> B[src/Build-Edge-Profil-Assistent.ps1]
   B --> C[build/Setup-Edge-Profil-Assistent_Embedded.ps1]
   C --> D[build/Edge_Profil_Assistent.exe]
-  D --> E[release/Edge_Profil_Assistent_vX.Y.Z.exe]
+  D --> E[Ältere Releases nach release/_Archiv/]
+  D --> F[release/Edge_Profil_Assistent_vX.Y.Z.exe]
+  B --> G[release/RELEASE_NOTES_vX.Y.Z.md]
 ```
 
 ## 2. Projektstruktur (relevant)
@@ -36,11 +38,11 @@ Edge-Profil-Assistent/
 │   └── version.txt
 ├── build/
 ├── release/
+│   └── _Archiv/
 ├── docs/
 │   ├── DOKUMENTATION_ANWENDER.md
 │   └── DOKUMENTATION_TECHNIK.md
 ├── README.md
-└── _Archiv/
 ```
 
 ## 3. Laufzeitfluss der EXE
@@ -118,7 +120,7 @@ Typische Fehlerbilder:
 
 - `src/version.txt` bei Releases bewusst pflegen.
 - Vor Release immer Build + Starttest durchführen.
-- `_Archiv/` als Altbestand beibehalten, aber nicht in aktive Pfade einbinden.
+- `release/_Archiv/` enthält ältere Release-Artefakte und wird nicht in aktive Pfade eingebunden.
 
 ## 10. Weiterführende Dokumente
 

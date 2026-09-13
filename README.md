@@ -32,13 +32,6 @@ Optional im Quellordner `src/`:
 
 Wenn optionale Screenshots fehlen, wird die EXE trotzdem gebaut; der jeweilige Bildbereich bleibt dann ausgeblendet.
 
-Archivierte Altdateien:
-
-- `_Archiv/Build-EXE.ps1`
-- `_Archiv/Edge_Setup_Assistent_Final.ps1`
-- `_Archiv/Edge_Setup_Assistent_starten.cmd`
-- `_Archiv/Edge_Assistent.config.json`
-
 Hinweis: Die Laufzeit-Konfiguration wird beim Start der Single-EXE automatisch im Temp-Verzeichnis erzeugt.
 
 ## Build
