@@ -20,8 +20,7 @@ flowchart TD
   A[src/Setup-Edge-Profil-Assistent.ps1] --> B[src/Build-Edge-Profil-Assistent.ps1]
   B --> C[build/Setup-Edge-Profil-Assistent_Embedded.ps1]
   C --> D[build/Edge_Profil_Assistent.exe]
-  D --> E[release/Edge_Profil_Assistent.exe]
-  D --> F[release/Edge_Profil_Assistent_vX.Y.Z.exe]
+  D --> E[release/Edge_Profil_Assistent_vX.Y.Z.exe]
 ```
 
 ## 2. Projektstruktur (relevant)
@@ -70,8 +69,8 @@ Ablauf:
 2. Embedded-Skript in `build/` erzeugen
 3. Kompilierung via `Invoke-ps2exe`
 4. EXE nach `build/Edge_Profil_Assistent.exe`
-5. Kopie nach `release/Edge_Profil_Assistent.exe`
-6. Zusätzliche versionierte Kopie nach `release/Edge_Profil_Assistent_vX.Y.Z.exe`
+5. Versionierte EXE nach `release/Edge_Profil_Assistent_vX.Y.Z.exe` kopieren
+6. Ältere Release-Dateien nach `release/_Archiv/` verschieben
 
 ## 5. Versionierung
 

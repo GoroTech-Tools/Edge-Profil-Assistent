@@ -23,21 +23,51 @@ function Get-AppRoot {
     return (Get-Location).Path
 }
 function Convert-FileToBase64 { param([string]$Path); if (-not (Test-Path $Path)) { return '' }; return [Convert]::ToBase64String([IO.File]::ReadAllBytes($Path)) }
+function Move-ExistingReleaseFilesToArchive {
+  param(
+    [Parameter(Mandatory=$true)][string]$ReleasePath,
+    [Parameter(Mandatory=$true)][string]$ArchivePath
+  )
+
+  if (-not (Test-Path $ArchivePath)) {
+    New-Item -Path $ArchivePath -ItemType Directory -Force | Out-Null
+  }
+
+  $archiveStamp = Get-Date -Format 'yyyyMMdd_HHmmss_fff'
+  $releaseFiles = @(Get-ChildItem -Path $ReleasePath -File -ErrorAction SilentlyContinue)
+  foreach ($releaseFile in $releaseFiles) {
+    $archiveTarget = Join-Path $ArchivePath $releaseFile.Name
+    if (Test-Path $archiveTarget) {
+      $archiveTarget = Join-Path $ArchivePath (
+        '{0}_{1}{2}' -f $releaseFile.BaseName, $archiveStamp, $releaseFile.Extension
+      )
+      $collisionIndex = 2
+      while (Test-Path $archiveTarget) {
+        $archiveTarget = Join-Path $ArchivePath (
+          '{0}_{1}_{2}{3}' -f $releaseFile.BaseName, $archiveStamp, $collisionIndex, $releaseFile.Extension
+        )
+        $collisionIndex++
+      }
+    }
+
+    Move-Item -Path $releaseFile.FullName -Destination $archiveTarget -Force
+    Write-Log ('Älteres Release archiviert: ' + $releaseFile.Name)
+  }
+}
 
 $ScriptRoot = Get-AppRoot
 $ProjectRoot = Split-Path -Parent $ScriptRoot
 $OutDir = Join-Path $ProjectRoot 'build'
 $ReleaseDir = Join-Path $ProjectRoot 'release'
+$ReleaseArchiveDir = Join-Path $ReleaseDir '_Archiv'
 $VersionFile = Join-Path $ScriptRoot 'version.txt'
 $Template = Join-Path $ScriptRoot 'Setup-Edge-Profil-Assistent.ps1'
 $Embedded = Join-Path $OutDir 'Setup-Edge-Profil-Assistent_Embedded.ps1'
 $Target = Join-Path $OutDir 'Edge_Profil_Assistent.exe'
-$ReleaseTarget = Join-Path $ReleaseDir 'Edge_Profil_Assistent.exe'
 $Logo = Join-Path $ScriptRoot 'gorotech.png'
 $Icon = Join-Path $ScriptRoot 'gorotech.ico'
 $DocAnwender = Join-Path $ProjectRoot 'docs\DOKUMENTATION_ANWENDER.md'
 $DocTechnik = Join-Path $ProjectRoot 'docs\DOKUMENTATION_TECHNIK.md'
-$ReleaseNotesLatest = Join-Path $ReleaseDir 'RELEASE_NOTES.md'
 $ReleaseNotesVersioned = $null
 $BuildMode = 'standard'
 $VersionSource = 'parameter'
@@ -104,6 +134,10 @@ if (-not (Test-Path $ReleaseDir)) {
   New-Item -Path $ReleaseDir -ItemType Directory -Force | Out-Null
 }
 
+if (-not (Test-Path $ReleaseArchiveDir)) {
+  New-Item -Path $ReleaseArchiveDir -ItemType Directory -Force | Out-Null
+}
+
 foreach ($required in @($Template,$Logo,$Icon,$DocAnwender,$DocTechnik)) {
     if (-not (Test-Path $required)) { throw ('Benötigte Datei fehlt: ' + $required) }
 }
@@ -147,15 +181,13 @@ Invoke-ps2exe @params
 if (-not (Test-Path $Target)) { throw 'EXE wurde nicht erstellt.' }
 Write-Log ('EXE erfolgreich erstellt: ' + $Target)
 
-Copy-Item -Path $Target -Destination $ReleaseTarget -Force
-Write-Log ('EXE nach release kopiert: ' + $ReleaseTarget)
+Move-ExistingReleaseFilesToArchive -ReleasePath $ReleaseDir -ArchivePath $ReleaseArchiveDir
+
 Copy-Item -Path $Target -Destination $ReleaseVersionTarget -Force
 Write-Log ('Versionierte EXE nach release kopiert: ' + $ReleaseVersionTarget)
 
 $releaseFile = Get-Item $ReleaseVersionTarget
 $sha256Versioned = (Get-FileHash -Path $ReleaseVersionTarget -Algorithm SHA256).Hash
-$sha256Latest = (Get-FileHash -Path $ReleaseTarget -Algorithm SHA256).Hash
-$latestFile = Get-Item $ReleaseTarget
 $embeddedFile = Get-Item $Embedded
 $generatedAt = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
 $generatedAtIso = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ssK')
@@ -166,7 +198,6 @@ try {
   $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop
   if ($osInfo -and $osInfo.Caption) { $osCaption = $osInfo.Caption }
 } catch { }
-Write-Log ('SHA256 latest: ' + $sha256Latest)
 Write-Log ('SHA256 versioned: ' + $sha256Versioned)
 $notes = @"
 # RELEASE_NOTES
@@ -178,7 +209,8 @@ $notes = @"
 ## Zusammenfassung
 
 - Build erfolgreich abgeschlossen und Release-Artefakte aktualisiert.
-- Versionierte EXE sowie aktuelle "latest"-EXE wurden in release/ bereitgestellt.
+- Versionierte EXE und versionierte Release Notes wurden in release/ bereitgestellt.
+- Ältere Release-Dateien werden in release/_Archiv/ aufbewahrt.
 - Release Notes wurden automatisch im Build erzeugt.
 
 ## Build-Metadaten
@@ -193,16 +225,12 @@ $notes = @"
 
 ## Artefakte
 
-- release/Edge_Profil_Assistent.exe
 - release/Edge_Profil_Assistent_$Version.exe
 
 ## Artefakt-Details
 
 - build/Setup-Edge-Profil-Assistent_Embedded.ps1
   - Größe: $($embeddedFile.Length) Bytes
-- release/Edge_Profil_Assistent.exe
-  - Größe: $($latestFile.Length) Bytes
-  - SHA256: $sha256Latest
 - release/Edge_Profil_Assistent_$Version.exe
   - Größe: $($releaseFile.Length) Bytes
   - SHA256: $sha256Versioned
@@ -221,7 +249,7 @@ $notes = @"
 
 - Build-Skript erfolgreich ausgeführt
 - PS2EXE-Kompilierung erfolgreich
-- Release-Kopie (`latest` + versioniert) erfolgreich
+- Versioniertes Release-Artefakt erfolgreich bereitgestellt
 - Release-Notes-Generierung erfolgreich
 
 ## Hinweise
@@ -232,6 +260,4 @@ $notes = @"
 "@
 
 [IO.File]::WriteAllText($ReleaseNotesVersioned, $notes, [System.Text.Encoding]::UTF8)
-[IO.File]::WriteAllText($ReleaseNotesLatest, $notes, [System.Text.Encoding]::UTF8)
 Write-Log ('Release Notes geschrieben: ' + $ReleaseNotesVersioned)
-Write-Log ('Release Notes aktualisiert: ' + $ReleaseNotesLatest)

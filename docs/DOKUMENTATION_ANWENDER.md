@@ -17,7 +17,7 @@ Die Anwendung läuft als portable Single-EXE und führt Schritt für Schritt dur
 
 ## Schnellstart
 
-1. Datei `release/Edge_Profil_Assistent.exe` (oder versionierte EXE) starten.
+1. Die versionierte EXE aus `release/` starten.
 2. Assistent links auf dem Bildschirm verwenden.
 3. Microsoft Edge wird bei Bedarf rechts geöffnet und positioniert.
 4. Schritte im Assistenten nacheinander abarbeiten.

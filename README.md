@@ -88,10 +88,9 @@ build\Edge_Profil_Assistent.exe
 
 Zusätzlich in `release/`:
 
-- `Edge_Profil_Assistent.exe` (latest)
 - `Edge_Profil_Assistent_vX.Y.Z.exe` (versioniert)
-- `RELEASE_NOTES.md` (latest)
 - `RELEASE_NOTES_vX.Y.Z.md` (versioniert, automatisch je Build erzeugt)
+- `_Archiv/` (ältere Release-Artefakte)
 
 Die EXE enthält Logo, Icon, JSON-Konfiguration und vorhandene Screenshots eingebettet.
 

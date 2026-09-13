@@ -304,9 +304,8 @@ Falls Sie den Favoriten nicht direkt sehen:
 
 [2] Wählen Sie "Favoriten".
 
-[3] Aktivieren Sie bei Bedarf die Favoritenleiste.
+[3] Aktivieren Sie mit der Tastenkombination "Strg + Umschalt + B" die Favoritenleiste.
 
-Tastenkombination: "Strg + Umschalt + B"
 '@ },
     [pscustomobject]@{ Title='Fertig'; Image=$null; Button='Schließen'; Action={}; Body='Geschafft! Das neue Edge-Profil und der Favorit sollten nun eingerichtet sein.' + [Environment]::NewLine + [Environment]::NewLine + 'Wenn etwas nicht geklappt hat, können Sie über "Zurück" einzelne Schritte erneut anzeigen.' }
 )

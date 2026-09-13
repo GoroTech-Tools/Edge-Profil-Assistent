@@ -2,39 +2,36 @@
 
 ## Version
 
-- v1.1.2
+- v1.1.3
 
 ## Zusammenfassung
 
 - Build erfolgreich abgeschlossen und Release-Artefakte aktualisiert.
-- Versionierte EXE sowie aktuelle "latest"-EXE wurden in release/ bereitgestellt.
+- Versionierte EXE und versionierte Release Notes wurden in release/ bereitgestellt.
+- Ältere Release-Dateien werden in release/_Archiv/ aufbewahrt.
 - Release Notes wurden automatisch im Build erzeugt.
 
 ## Build-Metadaten
 
-- Build-Modus: bump-patch
-- Erstellt am: 2026-06-24 20:57:15
-- Erstellt am (ISO): 2026-06-24T20:57:15+02:00
+- Build-Modus: standard
+- Erstellt am: 2026-09-13 12:10:31
+- Erstellt am (ISO): 2026-09-13T12:10:31+02:00
 - Versionsquelle: version-file
 - Quelle Build-Skript: src/Build-Edge-Profil-Assistent.ps1
-- PowerShell: Desktop 5.1.26100.8737
+- PowerShell: Desktop 5.1.26100.9444
 - Betriebssystem: Microsoft Windows 11 Pro
 
 ## Artefakte
 
-- release/Edge_Profil_Assistent.exe
-- release/Edge_Profil_Assistent_v1.1.2.exe
+- release/Edge_Profil_Assistent_v1.1.3.exe
 
 ## Artefakt-Details
 
 - build/Setup-Edge-Profil-Assistent_Embedded.ps1
-  - Größe: 671041 Bytes
-- release/Edge_Profil_Assistent.exe
+  - Größe: 670943 Bytes
+- release/Edge_Profil_Assistent_v1.1.3.exe
   - Größe: 1075200 Bytes
-  - SHA256: 4195CCA067F4DB8844F001191B15714D18652A8B2B260DF31AFFD4AA3BED54CD
-- release/Edge_Profil_Assistent_v1.1.2.exe
-  - Größe: 1075200 Bytes
-  - SHA256: 4195CCA067F4DB8844F001191B15714D18652A8B2B260DF31AFFD4AA3BED54CD
+  - SHA256: 1185D9F8DA4C54994AE8B3B802FF950FC074A8D1E5FB33E66F5AB3852FCAB027
 
 ## Eingangsdateien (Build-Inputs)
 
@@ -50,7 +47,7 @@
 
 - Build-Skript erfolgreich ausgeführt
 - PS2EXE-Kompilierung erfolgreich
-- Release-Kopie (latest + versioniert) erfolgreich
+- Versioniertes Release-Artefakt erfolgreich bereitgestellt
 - Release-Notes-Generierung erfolgreich
 
 ## Hinweise
